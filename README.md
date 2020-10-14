@@ -1,2 +1,3 @@
-# wdx-ants
-Alphanumeric Timestamp content plugin for Total Commander
+# ANTS - AlphaNumeric TimeStamp content plugin for Total Commander
+
+Beta dev
