@@ -188,6 +188,7 @@
       <ModuleDefinitionFile>.\ants.def</ModuleDefinitionFile>
       <TargetMachine>MachineX64</TargetMachine>
       <OutputFile>$(OutDir)ants.wdx64</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
