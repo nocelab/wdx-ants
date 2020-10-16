@@ -5,11 +5,12 @@
 #include "time.h"
 #include "contentplug.h"
 #include <Windows.h>
+#include <ctime>
 
 #define _detectstring ""
 #define fieldcount 2
-char* fieldnames[fieldcount]={"Test string", "Test int32"};
-int fieldtypes[fieldcount]={ft_string,ft_numeric_32};
+char* fieldnames[fieldcount]={"Epoch Creation Date", "Test int32"};
+int fieldtypes[fieldcount]={ft_string, ft_numeric_32};
 char* fieldunits_and_multiplechoicestrings[fieldcount]={"", ""};
 //int fieldflags[fieldcount]={0, 0};
 //int sortorders[fieldcount]={1, 1};
@@ -65,6 +66,24 @@ TCHAR* _tcslcpy(TCHAR* p,const TCHAR* p2,int maxlen)
 	strlcpy(DetectString,_detectstring,maxlen);
 	return 0;
 }*/
+
+// http://www.frenk.com/2009/12/convert-filetime-to-unix-timestamp/
+LONGLONG FileTime_to_POSIX(FILETIME ft)
+{
+	// takes the last modified date
+	LARGE_INTEGER date, adjust;
+	date.HighPart = ft.dwHighDateTime;
+	date.LowPart = ft.dwLowDateTime;
+
+	// 100-nanoseconds = milliseconds * 10000
+	adjust.QuadPart = 11644473600000 * 10000;
+
+	// removes the diff between 1970 and 1601
+	date.QuadPart -= adjust.QuadPart;
+
+	// converts back from 100-nanoseconds to seconds
+	return date.QuadPart / 10000000;
+}
 
 // Mandatory (must be implemented)
 int __stdcall ContentGetSupportedField(int FieldIndex,char* FieldName,char* Units,int maxlen)
@@ -134,22 +153,25 @@ int __stdcall ContentGetValue(TCHAR* FileName,int FieldIndex,int UnitIndex,void*
 		}
 	}*/
 	
-	/*if (FieldIndex!=20 && FieldIndex!=23 && FieldIndex!=24)  //not needed for these fields!
-		fh=FindFirstFile(FileName,&fd);
+	// FIND CURRENT FILE
+	if (FieldIndex == 0)  //not needed for these fields!
+		fh=FindFirstFile(FileName, &fd);
 	else
-		fh=0;*/
+		fh=0;
 
 	if (fh!=INVALID_HANDLE_VALUE) {
-		/*if (FieldIndex!=20 && FieldIndex!=23 && FieldIndex!=24)
-			FindClose(fh);*/
+		//if (FieldIndex!=20 && FieldIndex!=23 && FieldIndex!=24)
+		FindClose(fh);
 
 		switch (FieldIndex) {
 
-		case 0:
-		{
+		case 0: { // EPOCH CREATION DATE
 			
-			// TEST String
-			_tcslcpy((TCHAR*)FieldValue, L"Test string", maxlen-1);
+			char hex[9];
+			itoa(FileTime_to_POSIX(fd.ftCreationTime), hex, 16);
+
+			strlcpy((char*)FieldValue, hex, maxlen - 1);
+			
 			break;
 
 		} case 1: {
@@ -168,15 +190,16 @@ int __stdcall ContentGetValue(TCHAR* FileName,int FieldIndex,int UnitIndex,void*
 
 	int retval=fieldtypes[FieldIndex];  // very important!
 #ifdef UNICODE
-	if (retval==ft_string) {
+	/*if (retval==ft_string) {
 		switch (FieldIndex) {
 		case 0: // name
 		case 9: // attrstr
 		case 17:// versionstr
 		case 21:// "CutNameStart"
-			retval=ft_stringw;
+			//retval=ft_stringw;
+			retval = ft_string;
 		}
-	}
+	}*/
 #endif;
 	return retval;
 }
