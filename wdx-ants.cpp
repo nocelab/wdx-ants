@@ -9,8 +9,8 @@
 
 #define _detectstring ""
 #define fieldcount 2
-char* fieldnames[fieldcount]={"Epoch Creation Date", "Test int32"};
-int fieldtypes[fieldcount]={ft_string, ft_numeric_32};
+char* fieldnames[fieldcount]={"Epoch Time", "Sys(2015)"};
+int fieldtypes[fieldcount]={ft_string, ft_string};
 char* fieldunits_and_multiplechoicestrings[fieldcount]={"", ""};
 //int fieldflags[fieldcount]={0, 0};
 //int sortorders[fieldcount]={1, 1};
@@ -169,6 +169,13 @@ int __stdcall ContentGetValue(TCHAR* FileName,int FieldIndex,int UnitIndex,void*
 			
 			char hex[9];
 			itoa(FileTime_to_POSIX(fd.ftCreationTime), hex, 16);
+			
+			// TO UPPER
+			int i = 0;
+			while (hex[i]) {
+				hex[i] = toupper(hex[i]);
+				i++;
+			}
 
 			strlcpy((char*)FieldValue, hex, maxlen - 1);
 			
@@ -177,7 +184,11 @@ int __stdcall ContentGetValue(TCHAR* FileName,int FieldIndex,int UnitIndex,void*
 		} case 1: {
 
 			// TEST int
-			*(int*)FieldValue = 1234567890;
+			//*(int*)FieldValue = 1234567890;
+			char hex[10] = "SYS(2015)";
+			strlcpy((char*)FieldValue, hex, maxlen - 1);
+
+
 			break;
 		
 		} default:
